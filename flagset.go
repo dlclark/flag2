@@ -25,6 +25,16 @@ const (
 	PanicOnError                         // Call panic with a descriptive error.
 )
 
+type FlagSetBy int
+
+// These constants track how each flat is set
+const (
+	FlagSetByDefault FlagSetBy = iota
+	FlagSetByEnvVar
+	FlagSetByConfigFile
+	FlagSetByArgs
+)
+
 // A FlagSet represents a set of defined flags. The zero value of a FlagSet
 // has no name and has ContinueOnError error handling.
 type FlagSet struct {
@@ -43,18 +53,25 @@ type FlagSet struct {
 	errorHandling ErrorHandling
 	output        io.Writer // nil means stderr; use out() accessor
 
-	configFile io.Reader // file with our config in it
-	envPrefix  string    // prefix for our envrionment variable flags
+	configFile ConfigFile // interface to access a "config file" (whatever form that takes)
 }
 
 // A Flag represents the state of a flag.
 type Flag struct {
-	Name             string // name as it appears on command line
-	NameInConfigFile string // name as it appears in config file
-	NameInEnv        string // name as it appears in environment variables (minus prefix)
-	Usage            string // help message
-	Value            Value  // value as set
-	DefValue         string // default value (as text); for usage message
+	Name             string    // name as it appears on command line
+	Usage            string    // help message
+	Value            Value     // value as set
+	DefValue         string    // default value (as text); for usage message
+	NameInConfigFile string    // name as it appears in config file
+	NameInEnv        string    // name as it appears in environment variables (prefix possibly added during parse)
+	SetBy            FlagSetBy // tracks how the flag was set
+}
+
+type ConfigFile interface {
+	Open() error
+	FileName() string
+	ConfigValue(name string) (string, error)
+	Close()
 }
 
 // sortFlags returns the flags as a slice in lexicographical sorted order.
@@ -125,6 +142,10 @@ func (f *FlagSet) Set(name, value string) error {
 	if !ok {
 		return fmt.Errorf("no such flag -%v", name)
 	}
+	return f.set(flag, value)
+}
+
+func (f *FlagSet) set(flag *Flag, value string) error {
 	err := flag.Value.Set(value)
 	if err != nil {
 		return err
@@ -132,7 +153,7 @@ func (f *FlagSet) Set(name, value string) error {
 	if f.actual == nil {
 		f.actual = make(map[string]*Flag)
 	}
-	f.actual[name] = flag
+	f.actual[flag.Name] = flag
 	return nil
 }
 
@@ -333,15 +354,15 @@ func (f *FlagSet) Uint64(name string, value uint64, usage string) *uint64 {
 
 // StringVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a string variable in which to store the value of the flag.
-func (f *FlagSet) StringVar(p *string, name string, value string, usage string) {
-	f.Var(newStringValue(value, p), name, usage)
+func (f *FlagSet) StringVar(p *string, name string, value string, usage string, options ...FlagOption) {
+	f.Var(newStringValue(value, p), name, usage, options...)
 }
 
 // String defines a string flag with specified name, default value, and usage string.
 // The return value is the address of a string variable that stores the value of the flag.
-func (f *FlagSet) String(name string, value string, usage string) *string {
+func (f *FlagSet) String(name string, value string, usage string, options ...FlagOption) *string {
 	p := new(string)
-	f.StringVar(p, name, value, usage)
+	f.StringVar(p, name, value, usage, options...)
 	return p
 }
 
@@ -381,11 +402,18 @@ func (f *FlagSet) Duration(name string, value time.Duration, usage string) *time
 // caller could create a flag that turns a comma-separated string into a slice
 // of strings by giving the slice the methods of Value; in particular, Set would
 // decompose the comma-separated string into the slice.
-func (f *FlagSet) Var(value Value, name string, usage string) {
+func (f *FlagSet) Var(value Value, name string, usage string, options ...FlagOption) {
 	// Remember the default value as a string; it won't change.
-	flag := &Flag{name, usage, value, value.String()}
-	_, alreadythere := f.formal[name]
-	if alreadythere {
+	flag := &Flag{name, usage, value, value.String(), "", "", FlagSetByDefault}
+
+	// set our options
+	for _, opt := range options {
+		if err := opt(flag); err != nil {
+			panic(fmt.Sprintf("error on flag option: %s", name))
+		}
+	}
+
+	if _, alreadythere := f.formal[name]; alreadythere {
 		var msg string
 		if f.name == "" {
 			msg = fmt.Sprintf("flag redefined: %s", name)
@@ -408,6 +436,31 @@ func (f *FlagSet) failf(format string, a ...interface{}) error {
 	fmt.Fprintln(f.Output(), err)
 	f.usage()
 	return err
+}
+
+func (f *FlagSet) failfNoUsage(format string, a ...interface{}) error {
+	err := fmt.Errorf(format, a...)
+	fmt.Fprintln(f.Output(), err)
+	return err
+}
+
+func (f *FlagSet) flagSetBy(name string) string {
+	flag := f.Lookup(name)
+	if flag == nil {
+		return ""
+	}
+
+	switch flag.SetBy {
+	case FlagSetByEnvVar:
+		return fmt.Sprintf("%s set by Environment Variable %s", name, flag.NameInEnv)
+	case FlagSetByConfigFile:
+		return fmt.Sprintf("%s set by element %s in config file %s", name, flag.NameInConfigFile, f.configFile.FileName())
+	case FlagSetByArgs:
+		return fmt.Sprintf("%s set by command line arg", name)
+	default:
+		return fmt.Sprintf("%s set to default", name)
+	}
+
 }
 
 // usage calls the Usage method for the flag set if one is specified,
@@ -491,6 +544,8 @@ func (f *FlagSet) parseOne() (bool, error) {
 	if f.actual == nil {
 		f.actual = make(map[string]*Flag)
 	}
+
+	flag.SetBy = FlagSetByArgs
 	f.actual[name] = flag
 	return true, nil
 }
@@ -499,7 +554,7 @@ func (f *FlagSet) parseOne() (bool, error) {
 // include the command name. Must be called after all flags in the FlagSet
 // are defined and before flags are accessed by the program.
 // The return value will be ErrHelp if -help or -h were set but not defined.
-func (f *FlagSet) Parse(arguments []string) error {
+func (f *FlagSet) Parse(arguments []string, options ...ParseOption) error {
 	f.parsed = true
 	f.args = arguments
 	for {
@@ -519,6 +574,70 @@ func (f *FlagSet) Parse(arguments []string) error {
 			panic(err)
 		}
 	}
+
+	// now run our parse options
+	for _, opt := range options {
+		if err := opt(f); err != nil {
+			switch f.errorHandling {
+			case ContinueOnError:
+				return err
+			case ExitOnError:
+				os.Exit(2)
+			case PanicOnError:
+				panic(err)
+			}
+		}
+	}
+
+	// if anything is still default, check if it should be set by ENV
+	for _, flag := range sortFlags(f.formal) {
+		if flag.SetBy != FlagSetByDefault || flag.NameInEnv == "" {
+			continue
+		}
+
+		value, ok := os.LookupEnv(flag.NameInEnv)
+		if !ok {
+			continue
+		}
+
+		//set the value
+		if err := f.set(flag, value); err != nil {
+			return f.failfNoUsage("invalid value %q for envvar %s: %v", value, flag.NameInEnv, err)
+		}
+		flag.SetBy = FlagSetByEnvVar
+	}
+
+	if f.configFile == nil {
+		return nil
+	}
+
+	// handle the config file after args and env since the filename may be set
+	// by either of those places
+
+	if err := f.configFile.Open(); err != nil {
+		if os.IsNotExist(err) {
+			return f.failfNoUsage("missing config file '%v'", f.configFile.FileName())
+		}
+		return f.failfNoUsage("error opening config file %v: %v", f.configFile.FileName(), err)
+	}
+	defer f.configFile.Close()
+
+	// now get our values from config file
+	for _, flag := range sortFlags(f.formal) {
+		if flag.SetBy < FlagSetByConfigFile && flag.NameInConfigFile != "" {
+			value, err := f.configFile.ConfigValue(flag.NameInConfigFile)
+			if err == ErrNoValue {
+				continue
+			} else if err != nil {
+				return f.failfNoUsage("error retrieving value for config file entry %s from file %s: %v", flag.NameInConfigFile, f.configFile.FileName(), err)
+			}
+			if err := f.set(flag, value); err != nil {
+				return f.failfNoUsage("invalid value %q for config file entry %s from file %s: %v", value, flag.NameInConfigFile, f.configFile.FileName(), err)
+			}
+			flag.SetBy = FlagSetByConfigFile
+		}
+	}
+
 	return nil
 }
 
