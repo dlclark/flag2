@@ -286,71 +286,71 @@ func (f *FlagSet) Args() []string { return f.args }
 
 // BoolVar defines a bool flag with specified name, default value, and usage string.
 // The argument p points to a bool variable in which to store the value of the flag.
-func (f *FlagSet) BoolVar(p *bool, name string, value bool, usage string) {
-	f.Var(newBoolValue(value, p), name, usage)
+func (f *FlagSet) BoolVar(p *bool, name string, value bool, usage string, options ...FlagOption) {
+	f.Var(newBoolValue(value, p), name, usage, options...)
 }
 
 // Bool defines a bool flag with specified name, default value, and usage string.
 // The return value is the address of a bool variable that stores the value of the flag.
-func (f *FlagSet) Bool(name string, value bool, usage string) *bool {
+func (f *FlagSet) Bool(name string, value bool, usage string, options ...FlagOption) *bool {
 	p := new(bool)
-	f.BoolVar(p, name, value, usage)
+	f.BoolVar(p, name, value, usage, options...)
 	return p
 }
 
 // IntVar defines an int flag with specified name, default value, and usage string.
 // The argument p points to an int variable in which to store the value of the flag.
-func (f *FlagSet) IntVar(p *int, name string, value int, usage string) {
-	f.Var(newIntValue(value, p), name, usage)
+func (f *FlagSet) IntVar(p *int, name string, value int, usage string, options ...FlagOption) {
+	f.Var(newIntValue(value, p), name, usage, options...)
 }
 
 // Int defines an int flag with specified name, default value, and usage string.
 // The return value is the address of an int variable that stores the value of the flag.
-func (f *FlagSet) Int(name string, value int, usage string) *int {
+func (f *FlagSet) Int(name string, value int, usage string, options ...FlagOption) *int {
 	p := new(int)
-	f.IntVar(p, name, value, usage)
+	f.IntVar(p, name, value, usage, options...)
 	return p
 }
 
 // Int64Var defines an int64 flag with specified name, default value, and usage string.
 // The argument p points to an int64 variable in which to store the value of the flag.
-func (f *FlagSet) Int64Var(p *int64, name string, value int64, usage string) {
-	f.Var(newInt64Value(value, p), name, usage)
+func (f *FlagSet) Int64Var(p *int64, name string, value int64, usage string, options ...FlagOption) {
+	f.Var(newInt64Value(value, p), name, usage, options...)
 }
 
 // Int64 defines an int64 flag with specified name, default value, and usage string.
 // The return value is the address of an int64 variable that stores the value of the flag.
-func (f *FlagSet) Int64(name string, value int64, usage string) *int64 {
+func (f *FlagSet) Int64(name string, value int64, usage string, options ...FlagOption) *int64 {
 	p := new(int64)
-	f.Int64Var(p, name, value, usage)
+	f.Int64Var(p, name, value, usage, options...)
 	return p
 }
 
 // UintVar defines a uint flag with specified name, default value, and usage string.
 // The argument p points to a uint variable in which to store the value of the flag.
-func (f *FlagSet) UintVar(p *uint, name string, value uint, usage string) {
-	f.Var(newUintValue(value, p), name, usage)
+func (f *FlagSet) UintVar(p *uint, name string, value uint, usage string, options ...FlagOption) {
+	f.Var(newUintValue(value, p), name, usage, options...)
 }
 
 // Uint defines a uint flag with specified name, default value, and usage string.
 // The return value is the address of a uint variable that stores the value of the flag.
-func (f *FlagSet) Uint(name string, value uint, usage string) *uint {
+func (f *FlagSet) Uint(name string, value uint, usage string, options ...FlagOption) *uint {
 	p := new(uint)
-	f.UintVar(p, name, value, usage)
+	f.UintVar(p, name, value, usage, options...)
 	return p
 }
 
 // Uint64Var defines a uint64 flag with specified name, default value, and usage string.
 // The argument p points to a uint64 variable in which to store the value of the flag.
-func (f *FlagSet) Uint64Var(p *uint64, name string, value uint64, usage string) {
-	f.Var(newUint64Value(value, p), name, usage)
+func (f *FlagSet) Uint64Var(p *uint64, name string, value uint64, usage string, options ...FlagOption) {
+	f.Var(newUint64Value(value, p), name, usage, options...)
 }
 
 // Uint64 defines a uint64 flag with specified name, default value, and usage string.
 // The return value is the address of a uint64 variable that stores the value of the flag.
-func (f *FlagSet) Uint64(name string, value uint64, usage string) *uint64 {
+func (f *FlagSet) Uint64(name string, value uint64, usage string, options ...FlagOption) *uint64 {
 	p := new(uint64)
-	f.Uint64Var(p, name, value, usage)
+	f.Uint64Var(p, name, value, usage, options...)
 	return p
 }
 
@@ -370,31 +370,31 @@ func (f *FlagSet) String(name string, value string, usage string, options ...Fla
 
 // Float64Var defines a float64 flag with specified name, default value, and usage string.
 // The argument p points to a float64 variable in which to store the value of the flag.
-func (f *FlagSet) Float64Var(p *float64, name string, value float64, usage string) {
-	f.Var(newFloat64Value(value, p), name, usage)
+func (f *FlagSet) Float64Var(p *float64, name string, value float64, usage string, options ...FlagOption) {
+	f.Var(newFloat64Value(value, p), name, usage, options...)
 }
 
 // Float64 defines a float64 flag with specified name, default value, and usage string.
 // The return value is the address of a float64 variable that stores the value of the flag.
-func (f *FlagSet) Float64(name string, value float64, usage string) *float64 {
+func (f *FlagSet) Float64(name string, value float64, usage string, options ...FlagOption) *float64 {
 	p := new(float64)
-	f.Float64Var(p, name, value, usage)
+	f.Float64Var(p, name, value, usage, options...)
 	return p
 }
 
 // DurationVar defines a time.Duration flag with specified name, default value, and usage string.
 // The argument p points to a time.Duration variable in which to store the value of the flag.
 // The flag accepts a value acceptable to time.ParseDuration.
-func (f *FlagSet) DurationVar(p *time.Duration, name string, value time.Duration, usage string) {
-	f.Var(newDurationValue(value, p), name, usage)
+func (f *FlagSet) DurationVar(p *time.Duration, name string, value time.Duration, usage string, options ...FlagOption) {
+	f.Var(newDurationValue(value, p), name, usage, options...)
 }
 
 // Duration defines a time.Duration flag with specified name, default value, and usage string.
 // The return value is the address of a time.Duration variable that stores the value of the flag.
 // The flag accepts a value acceptable to time.ParseDuration.
-func (f *FlagSet) Duration(name string, value time.Duration, usage string) *time.Duration {
+func (f *FlagSet) Duration(name string, value time.Duration, usage string, options ...FlagOption) *time.Duration {
 	p := new(time.Duration)
-	f.DurationVar(p, name, value, usage)
+	f.DurationVar(p, name, value, usage, options...)
 	return p
 }
 

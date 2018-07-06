@@ -91,100 +91,100 @@ func Args() []string { return CommandLine.args }
 
 // BoolVar defines a bool flag with specified name, default value, and usage string.
 // The argument p points to a bool variable in which to store the value of the flag.
-func BoolVar(p *bool, name string, value bool, usage string) {
-	CommandLine.Var(newBoolValue(value, p), name, usage)
+func BoolVar(p *bool, name string, value bool, usage string, options ...FlagOption) {
+	CommandLine.Var(newBoolValue(value, p), name, usage, options...)
 }
 
 // Bool defines a bool flag with specified name, default value, and usage string.
 // The return value is the address of a bool variable that stores the value of the flag.
-func Bool(name string, value bool, usage string) *bool {
-	return CommandLine.Bool(name, value, usage)
+func Bool(name string, value bool, usage string, options ...FlagOption) *bool {
+	return CommandLine.Bool(name, value, usage, options...)
 }
 
 // IntVar defines an int flag with specified name, default value, and usage string.
 // The argument p points to an int variable in which to store the value of the flag.
-func IntVar(p *int, name string, value int, usage string) {
-	CommandLine.Var(newIntValue(value, p), name, usage)
+func IntVar(p *int, name string, value int, usage string, options ...FlagOption) {
+	CommandLine.Var(newIntValue(value, p), name, usage, options...)
 }
 
 // Int defines an int flag with specified name, default value, and usage string.
 // The return value is the address of an int variable that stores the value of the flag.
-func Int(name string, value int, usage string) *int {
-	return CommandLine.Int(name, value, usage)
+func Int(name string, value int, usage string, options ...FlagOption) *int {
+	return CommandLine.Int(name, value, usage, options...)
 }
 
 // Int64Var defines an int64 flag with specified name, default value, and usage string.
 // The argument p points to an int64 variable in which to store the value of the flag.
-func Int64Var(p *int64, name string, value int64, usage string) {
-	CommandLine.Var(newInt64Value(value, p), name, usage)
+func Int64Var(p *int64, name string, value int64, usage string, options ...FlagOption) {
+	CommandLine.Var(newInt64Value(value, p), name, usage, options...)
 }
 
 // Int64 defines an int64 flag with specified name, default value, and usage string.
 // The return value is the address of an int64 variable that stores the value of the flag.
-func Int64(name string, value int64, usage string) *int64 {
-	return CommandLine.Int64(name, value, usage)
+func Int64(name string, value int64, usage string, options ...FlagOption) *int64 {
+	return CommandLine.Int64(name, value, usage, options...)
 }
 
 // UintVar defines a uint flag with specified name, default value, and usage string.
 // The argument p points to a uint variable in which to store the value of the flag.
-func UintVar(p *uint, name string, value uint, usage string) {
-	CommandLine.Var(newUintValue(value, p), name, usage)
+func UintVar(p *uint, name string, value uint, usage string, options ...FlagOption) {
+	CommandLine.Var(newUintValue(value, p), name, usage, options...)
 }
 
 // Uint defines a uint flag with specified name, default value, and usage string.
 // The return value is the address of a uint variable that stores the value of the flag.
-func Uint(name string, value uint, usage string) *uint {
-	return CommandLine.Uint(name, value, usage)
+func Uint(name string, value uint, usage string, options ...FlagOption) *uint {
+	return CommandLine.Uint(name, value, usage, options...)
 }
 
 // Uint64Var defines a uint64 flag with specified name, default value, and usage string.
 // The argument p points to a uint64 variable in which to store the value of the flag.
-func Uint64Var(p *uint64, name string, value uint64, usage string) {
-	CommandLine.Var(newUint64Value(value, p), name, usage)
+func Uint64Var(p *uint64, name string, value uint64, usage string, options ...FlagOption) {
+	CommandLine.Var(newUint64Value(value, p), name, usage, options...)
 }
 
 // Uint64 defines a uint64 flag with specified name, default value, and usage string.
 // The return value is the address of a uint64 variable that stores the value of the flag.
-func Uint64(name string, value uint64, usage string) *uint64 {
-	return CommandLine.Uint64(name, value, usage)
+func Uint64(name string, value uint64, usage string, options ...FlagOption) *uint64 {
+	return CommandLine.Uint64(name, value, usage, options...)
 }
 
 // StringVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a string variable in which to store the value of the flag.
-func StringVar(p *string, name string, value string, usage string) {
-	CommandLine.Var(newStringValue(value, p), name, usage)
+func StringVar(p *string, name string, value string, usage string, options ...FlagOption) {
+	CommandLine.Var(newStringValue(value, p), name, usage, options...)
 }
 
 // String defines a string flag with specified name, default value, and usage string.
 // The return value is the address of a string variable that stores the value of the flag.
-func String(name string, value string, usage string) *string {
-	return CommandLine.String(name, value, usage)
+func String(name string, value string, usage string, options ...FlagOption) *string {
+	return CommandLine.String(name, value, usage, options...)
 }
 
 // Float64Var defines a float64 flag with specified name, default value, and usage string.
 // The argument p points to a float64 variable in which to store the value of the flag.
-func Float64Var(p *float64, name string, value float64, usage string) {
-	CommandLine.Var(newFloat64Value(value, p), name, usage)
+func Float64Var(p *float64, name string, value float64, usage string, options ...FlagOption) {
+	CommandLine.Var(newFloat64Value(value, p), name, usage, options...)
 }
 
 // Float64 defines a float64 flag with specified name, default value, and usage string.
 // The return value is the address of a float64 variable that stores the value of the flag.
-func Float64(name string, value float64, usage string) *float64 {
-	return CommandLine.Float64(name, value, usage)
+func Float64(name string, value float64, usage string, options ...FlagOption) *float64 {
+	return CommandLine.Float64(name, value, usage, options...)
 }
 
 // DurationVar defines a time.Duration flag with specified name, default value, and usage string.
 // The argument p points to a time.Duration variable in which to store the value of the flag.
 // The flag accepts a value acceptable to time.ParseDuration.
-func DurationVar(p *time.Duration, name string, value time.Duration, usage string) {
-	CommandLine.Var(newDurationValue(value, p), name, usage)
+func DurationVar(p *time.Duration, name string, value time.Duration, usage string, options ...FlagOption) {
+	CommandLine.Var(newDurationValue(value, p), name, usage, options...)
 }
 
 // Duration defines a time.Duration flag with specified name, default value, and usage string.
 // The return value is the address of a time.Duration variable that stores the value of the flag.
 // The flag accepts a value acceptable to time.ParseDuration.
-func Duration(name string, value time.Duration, usage string) *time.Duration {
-	return CommandLine.Duration(name, value, usage)
+func Duration(name string, value time.Duration, usage string, options ...FlagOption) *time.Duration {
+	return CommandLine.Duration(name, value, usage, options...)
 }
 
 // Var defines a flag with the specified name and usage string. The type and
@@ -193,15 +193,15 @@ func Duration(name string, value time.Duration, usage string) *time.Duration {
 // caller could create a flag that turns a comma-separated string into a slice
 // of strings by giving the slice the methods of Value; in particular, Set would
 // decompose the comma-separated string into the slice.
-func Var(value Value, name string, usage string) {
-	CommandLine.Var(value, name, usage)
+func Var(value Value, name string, usage string, options ...FlagOption) {
+	CommandLine.Var(value, name, usage, options...)
 }
 
 // Parse parses the command-line flags from os.Args[1:]. Must be called
 // after all flags are defined and before flags are accessed by the program.
-func Parse() {
+func Parse(options ...ParseOption) {
 	// Ignore errors; CommandLine is set for ExitOnError.
-	CommandLine.Parse(os.Args[1:])
+	CommandLine.Parse(os.Args[1:], options...)
 }
 
 // Parsed reports whether the command-line flags have been parsed.
