@@ -1,7 +1,9 @@
 package flag2
 
 import (
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -16,12 +18,14 @@ func TestBasicSmoke(t *testing.T) {
 	)
 	// set env, write config
 	os.Setenv("MYAPP_BAZ", "bazEnvValue")
+	var cfgFile = filepath.Join(os.TempDir(), "cfgValue")
+	ioutil.WriteFile(cfgFile, []byte("{ \"bar\" : \"barCfgValue\" }"), 0666)
 
-	err := fs.Parse([]string{"-foo", "fooValue", "-bar", "barCfgValue", "-cfg", "cfgValue"}, JSONVia("cfg"), EnvPrefix("MYAPP_"))
+	err := fs.Parse([]string{"-foo", "fooValue", "-cfg", cfgFile}, JSONVia("cfg"), EnvPrefix("MYAPP_"))
+
 	if err != nil {
 		t.Fatalf("Unexpected error during parse: %v", err)
 	}
-
 	if want, got := 100, *def; want != got {
 		t.Fatalf("Wanted %v, got %v", want, got)
 	}
@@ -34,7 +38,7 @@ func TestBasicSmoke(t *testing.T) {
 	if want, got := "bazEnvValue", *baz; want != got {
 		t.Fatalf("Wanted %v, got %v", want, got)
 	}
-	if want, got := "cfgValue", *cfg; want != got {
+	if want, got := cfgFile, *cfg; want != got {
 		t.Fatalf("Wanted %v, got %v", want, got)
 	}
 }

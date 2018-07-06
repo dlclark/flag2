@@ -1,7 +1,9 @@
 package flag2
 
 import (
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"os"
 )
 
@@ -32,6 +34,7 @@ type jsonConfigFile struct {
 	fs           *FlagSet
 	fileNameFlag *Flag
 	file         *os.File
+	data         map[string]string
 }
 
 func (j *jsonConfigFile) FileName() string {
@@ -39,25 +42,46 @@ func (j *jsonConfigFile) FileName() string {
 }
 
 func (j *jsonConfigFile) ConfigValue(name string) (string, error) {
-	return "", ErrNoValue
+	if j.data == nil {
+		return "", ErrNoValue
+	}
+
+	value, ok := j.data[name]
+	if !ok {
+		return "", ErrNoValue
+	}
+
+	return value, nil
 }
 
 func (j *jsonConfigFile) Open() error {
-	if j.file == nil {
-		// open the file
-		fileName := j.FileName()
-
-		if fileName == "" {
-			// no file, no values
-			return nil
-		}
-
-		file, err := os.Open(fileName)
-		if err != nil {
-			return err
-		}
-		j.file = file
+	if j.file != nil {
+		return nil
 	}
+
+	// open the file
+	fileName := j.FileName()
+
+	if fileName == "" {
+		// no file, no values
+		return nil
+	}
+
+	file, err := os.Open(fileName)
+	if err != nil {
+		return err
+	}
+	j.file = file
+
+	bytes, err := ioutil.ReadAll(j.file)
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(bytes, &j.data); err != nil {
+		return err
+	}
+
 	return nil
 }
 
