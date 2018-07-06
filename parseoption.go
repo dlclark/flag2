@@ -95,8 +95,8 @@ func (j *jsonConfigFile) Close() {
 	}
 }
 
-// EnvPrefix will prepend all flag Env names with a given prefix
-func EnvPrefix(prefix string) ParseOption {
+// AddEnvPrefix will prepend all flag Env names with a given prefix
+func AddEnvPrefix(prefix string) ParseOption {
 	return func(f *FlagSet) error {
 		f.VisitAll(func(flag *Flag) {
 			if flag.NameInEnv != "" {
@@ -130,3 +130,33 @@ func UseDefaultNamesInEnvVars() ParseOption {
 		return nil
 	}
 }
+
+// InMemoryConfig will set the config file data to a given map of data
+func InMemoryConfig(data map[string]string) ParseOption {
+	return func(f *FlagSet) error {
+		f.configFile = &memoryConfigFile{data: data}
+		return nil
+	}
+}
+
+type memoryConfigFile struct {
+	data map[string]string
+}
+
+func (m *memoryConfigFile) ConfigValue(name string) (string, error) {
+	val, found := m.data[name]
+	if !found {
+		return "", ErrNoValue
+	}
+	return val, nil
+}
+
+func (m *memoryConfigFile) FileName() string {
+	return "in memory"
+}
+
+func (m *memoryConfigFile) Open() error {
+	return nil
+}
+
+func (m *memoryConfigFile) Close() {}
