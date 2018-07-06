@@ -5,15 +5,19 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 // ErrNoValue is the error returned if the config file doesn't contain a value
 // for the requested flag
 var ErrNoValue = errors.New("flag: help requested")
 
+// ParseOption is a hook that allows mixins to update a FlagSet after command line
+// args are parsed, but before envvar and config file.
 type ParseOption func(*FlagSet) error
 
-func JSONVia(flagName string) ParseOption {
+// JSONFileVia will set the config file based on the value of the given flag
+func JSONFileVia(flagName string) ParseOption {
 	return func(f *FlagSet) error {
 		if f.configFile != nil {
 			return f.failf("error handling %v flag, config file already set", flagName)
@@ -91,11 +95,36 @@ func (j *jsonConfigFile) Close() {
 	}
 }
 
+// EnvPrefix will prepend all flag Env names with a given prefix
 func EnvPrefix(prefix string) ParseOption {
 	return func(f *FlagSet) error {
 		f.VisitAll(func(flag *Flag) {
 			if flag.NameInEnv != "" {
 				flag.NameInEnv = prefix + flag.NameInEnv
+			}
+		})
+		return nil
+	}
+}
+
+// UseDefaultNamesInConfigFile will allow every flag to be found in the Config file
+func UseDefaultNamesInConfigFile() ParseOption {
+	return func(f *FlagSet) error {
+		f.VisitAll(func(flag *Flag) {
+			if flag.NameInConfigFile == "" {
+				flag.NameInConfigFile = flag.Name
+			}
+		})
+		return nil
+	}
+}
+
+// UseDefaultNamesInEnvVars will allow every flag to be found in the EnvVars
+func UseDefaultNamesInEnvVars() ParseOption {
+	return func(f *FlagSet) error {
+		f.VisitAll(func(flag *Flag) {
+			if flag.NameInEnv == "" {
+				flag.NameInEnv = strings.ToUpper(flag.Name)
 			}
 		})
 		return nil

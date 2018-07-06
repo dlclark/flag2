@@ -25,6 +25,7 @@ const (
 	PanicOnError                         // Call panic with a descriptive error.
 )
 
+// FlagSetBy defines how each flag's value was set
 type FlagSetBy int
 
 // These constants track how each flat is set
@@ -67,6 +68,7 @@ type Flag struct {
 	SetBy            FlagSetBy // tracks how the flag was set
 }
 
+// A ConfigFile represents a set of flags stored in advance (usually to disk) that are overriden by args
 type ConfigFile interface {
 	Open() error
 	FileName() string

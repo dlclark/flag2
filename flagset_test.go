@@ -12,8 +12,8 @@ func TestBasicSmoke(t *testing.T) {
 	var (
 		def = fs.Int("def", 100, "default")
 		foo = fs.String("foo", "x", "foo val")
-		bar = fs.String("bar", "y", "bar val", JSON("bar"))
-		baz = fs.String("baz", "z", "baz val", JSON("baz"), Env("BAZ"))
+		bar = fs.String("bar", "y", "bar val", File("bar"))
+		baz = fs.String("baz", "z", "baz val", File("baz"), Env("BAZ"))
 		cfg = fs.String("cfg", "", "JSON config file")
 	)
 	// set env, write config
@@ -21,7 +21,7 @@ func TestBasicSmoke(t *testing.T) {
 	var cfgFile = filepath.Join(os.TempDir(), "cfgValue")
 	ioutil.WriteFile(cfgFile, []byte("{ \"bar\" : \"barCfgValue\" }"), 0666)
 
-	err := fs.Parse([]string{"-foo", "fooValue", "-cfg", cfgFile}, JSONVia("cfg"), EnvPrefix("MYAPP_"))
+	err := fs.Parse([]string{"-foo", "fooValue", "-cfg", cfgFile}, JSONFileVia("cfg"), EnvPrefix("MYAPP_"))
 
 	if err != nil {
 		t.Fatalf("Unexpected error during parse: %v", err)
